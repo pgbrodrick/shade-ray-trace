@@ -13,7 +13,10 @@ import bresenham_line
 parser = argparse.ArgumentParser('Calculate shade mask using a ray trace from OBS and TCH model')
 parser.add_argument('obs_file', type=str)
 parser.add_argument('igm_file', type=str)
-parser.add_argument('dsm_file', type=str)
+#parser.add_argument('dsm_file', type=str)
+parser.add_argument('dem_file', type=str)
+parser.add_argument('tch_file', type=str)
+
 parser.add_argument('out_file', type=str)
 parser.add_argument('-solar_azimuth_b', type=int, default=4)
 parser.add_argument('-solar_zenith_b', type=int, default=5)
@@ -24,7 +27,9 @@ args = parser.parse_args()
 
 obs_set = gdal.Open(args.obs_file, gdal.GA_ReadOnly)
 igm_set = gdal.Open(args.igm_file, gdal.GA_ReadOnly)
-dsm_set = gdal.Open(args.dsm_file, gdal.GA_ReadOnly)
+#dsm_set = gdal.Open(args.dsm_file, gdal.GA_ReadOnly)
+dsm_set = gdal.Open(args.dem_file, gdal.GA_ReadOnly)
+tch_set = gdal.Open(args.tch_file, gdal.GA_ReadOnly)
 
 assert obs_set is not None, 'Cannot open {}'.format(args.obs_file)
 assert igm_set is not None, 'Cannot open {}'.format(args.igm_file)
@@ -36,11 +41,16 @@ outDataset = driver.Create(args.out_file,obs_set.RasterXSize,obs_set.RasterYSize
 outDataset.SetGeoTransform(obs_set.GetGeoTransform())
 outDataset.SetProjection(obs_set.GetProjection())
 
-dsm = dsm_set.ReadAsArray()
-dsm_trans = dsm_set.GetGeoTransform()
+#dsm = dsm_set.ReadAsArray()
+dsm = dsm_set.ReadAsArray() + tch_set.ReadAsArray()
+dsm_trans = list(dsm_set.GetGeoTransform())
+dsm_trans[0] += float(dsm_trans[1]) / 2.
+dsm_trans[3] += float(dsm_trans[5]) / 2.
 dsm_max_px = int(math.ceil(math.sqrt(dsm_set.RasterXSize**2 + dsm_set.RasterYSize**2)))
 
+#outDataset.GetRasterBand(1).WriteArray(np.zeros((igm_set.RasterYSize,igm_set.RasterXSize)),0,0)
 for _line in tqdm(range(obs_set.RasterYSize),ncols=80):
+#for _line in tqdm(range(4000,4400),ncols=80):
 
     obs_line = np.squeeze(obs_set.ReadAsArray(0,_line,obs_set.RasterXSize,1))
     igm_line = np.squeeze(igm_set.ReadAsArray(0,_line,igm_set.RasterXSize,1))
@@ -48,8 +58,12 @@ for _line in tqdm(range(obs_set.RasterYSize),ncols=80):
     solar_azimuth = np.squeeze(obs_line[args.solar_azimuth_b-1,:])
     solar_zenith = np.squeeze(obs_line[args.solar_zenith_b-1,:])
 
+    # adjust for sun width
+    #solar_zenith = solar_zenith - 0.53
+    #solar_zenith[solar_zenith < 0] = 0
+
     # calculate the pre-rounded version (want for edge calc...will round below)
-    dsm_target_px_x = (igm_line[0,:] - dsm_trans[0])/dsm_trans[1]
+    dsm_target_px_x = (igm_line[0,:] - dsm_trans[0])/dsm_trans[1] 
     dsm_target_px_y = (igm_line[1,:] - dsm_trans[3])/dsm_trans[5]
 
     # Find per-pixel distance to nearest edge in direction of sun
