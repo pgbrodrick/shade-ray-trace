@@ -13,9 +13,12 @@ https://code.earthengine.google.com/5c96bbc96ffd50e3c8b1433b34a0bb86
 <br>
 
 ### Shade masks for this project are available as assets on GEE: 
-DSM: https://code.earthengine.google.com/?asset=users/pgbrodrick/SFA/collections/shade_priority. <br>
-DTM + CHM: https://code.earthengine.google.com/?asset=users/pgbrodrick/SFA/collections/shade_tch_priority. 
-<br> <br>
+DSM Shade: https://code.earthengine.google.com/?asset=users/pgbrodrick/SFA/collections/shade_priority. <br>
+DTM + CHM Shade: https://code.earthengine.google.com/?asset=users/pgbrodrick/SFA/collections/shade_tch_priority. 
+<br> 
+and are included in the following data package: 
+> Brodrick P ; Goulden T ; Chadwick K D (2020): Custom NEON AOP reflectance mosaics and maps of shade masks, canopy water content. Watershed Function SFA. DOI: 10.15485/1618131<br>
+
 ## Additional relevant repositories:
 
 ### Atmospheric correction wrapper: 
