@@ -8,7 +8,11 @@ A full description of the effort can be found at:
 
 and use of this code should cite that manuscript.
 
-### Shade masks for this project are available on GEE: 
+### Visualization code in GEE for all products in this project can be found here: 
+https://code.earthengine.google.com/5c96bbc96ffd50e3c8b1433b34a0bb86
+<br>
+
+### Shade masks for this project are available as assets on GEE: 
 DSM: https://code.earthengine.google.com/?asset=users/pgbrodrick/SFA/collections/shade_priority. <br>
 DTM + CHM: https://code.earthengine.google.com/?asset=users/pgbrodrick/SFA/collections/shade_tch_priority. 
 <br> <br>
