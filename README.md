@@ -8,6 +8,10 @@ A full description of the effort can be found at:
 
 and use of this code should cite that manuscript.
 
+### Shade masks for this project are available on GEE: 
+DSM: https://code.earthengine.google.com/?asset=users/pgbrodrick/SFA/collections/shade_priority. <br>
+DTM + CHM: https://code.earthengine.google.com/?asset=users/pgbrodrick/SFA/collections/shade_tch_priority. 
+<br> <br>
 ## Additional relevant repositories:
 
 ### Atmospheric correction wrapper: 
