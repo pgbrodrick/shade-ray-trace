@@ -1,7 +1,9 @@
 
-
+# Shamelessly borrowed from https://github.com/fjug/BobSeg/blob/master/bresenham.py
 
 import numpy as np
+
+
 def _bresenhamline_nslope(slope):
     """
     Normalize slope for Bresenham's line algorithm.
@@ -24,6 +26,7 @@ def _bresenhamline_nslope(slope):
     normalizedslope = np.array(slope, dtype=np.double) / scale
     normalizedslope[zeroslope] = np.zeros(slope[0].shape)
     return normalizedslope
+
 
 def _bresenhamlines(start, end, max_iter):
     """
@@ -65,6 +68,7 @@ def _bresenhamlines(start, end, max_iter):
 
     # Approximate to nearest int
     return np.array(np.rint(bline), dtype=start.dtype)
+
 
 def bresenhamline(start, end, max_iter=5):
     """
