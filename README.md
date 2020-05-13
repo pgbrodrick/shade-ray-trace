@@ -1,4 +1,4 @@
-# Creation of time-of-flight shade masks from LiDAR data for NEON AOP
+# Creation of time-of-flight shade masks for NEON AOP
 
 This set of code generates shade masks for NEON AOP data by combining sensor and solar view angles with surface models through a ray tracing algorithm. Shade masks can be generated either based on the digital surface model or from the digital terrain model combined with the canopy height model. This code was created as part of an effort to generate foliar trait maps throughout the Department of Energy (DOE) Watershed Function Scientific Focus Area (WF-SFA) site in Crested Butte, CO in association with NEON's Assignable Asset program.<br> A full description of the effort can be found at:
 
