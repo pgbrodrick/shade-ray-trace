@@ -1,7 +1,7 @@
 
 
 import argparse
-import gdal
+from osgeo import gdal
 import math
 import numpy as np
 from tqdm import tqdm
@@ -60,11 +60,17 @@ def main():
 
     if use_dsm:
         surface = dsm_set.ReadAsArray()
+        dsm_trans = list(dsm_set.GetGeoTransform())
+        x_size = dsm_set.RasterXSize
+        y_size = dsm_set.RasterYSize
     else:
-        surface = dsm_set.ReadAsArray() + tch_set.ReadAsArray()
-    dsm_trans = list(dsm_set.GetGeoTransform())
+        surface = dem_set.ReadAsArray() + tch_set.ReadAsArray()
+        dsm_trans = list(dem_set.GetGeoTransform())
+        x_size = dem_set.RasterXSize
+        y_size = dem_set.RasterYSize
     dsm_trans[0] += float(dsm_trans[1]) / 2.
     dsm_trans[3] += float(dsm_trans[5]) / 2.
+
 
     # outDataset.GetRasterBand(1).WriteArray(np.zeros((igm_set.RasterYSize,igm_set.RasterXSize)),0,0)
     for _line in tqdm(range(obs_set.RasterYSize), ncols=80):
@@ -85,10 +91,10 @@ def main():
 
         # Find per-pixel distance to nearest edge in direction of sun
         dsm_max_px = np.ones(dsm_target_px_x.shape) * \
-            int(math.ceil(math.sqrt(dsm_set.RasterXSize**2 + dsm_set.RasterYSize**2)))
+            int(math.ceil(math.sqrt(x_size**2 + y_size**2)))
 
         subset = np.logical_and(solar_azimuth > 0, solar_azimuth <= 180)
-        dsm_max_px[subset] = np.minimum(dsm_max_px[subset], (dsm_set.RasterXSize -
+        dsm_max_px[subset] = np.minimum(dsm_max_px[subset], (x_size -
                                                              dsm_target_px_x[subset])/np.abs(np.sin(np.pi / 180 * solar_azimuth[subset])))
 
         subset = np.logical_not(subset)
@@ -96,7 +102,7 @@ def main():
             dsm_max_px[subset], dsm_target_px_x[subset]/np.abs(np.sin(np.pi / 180 * solar_azimuth[subset])))
 
         subset = np.logical_and(solar_azimuth > 90, solar_azimuth <= 270)
-        dsm_max_px[subset] = np.minimum(dsm_max_px[subset], (dsm_set.RasterYSize -
+        dsm_max_px[subset] = np.minimum(dsm_max_px[subset], (y_size -
                                                              dsm_target_px_y[subset])/np.abs(np.cos(np.pi / 180 * solar_azimuth[subset])))
 
         subset = np.logical_not(subset)
@@ -110,9 +116,9 @@ def main():
         # Round edge pixels
         shp = dsm_target_px_x.shape
         dsm_edge_px_x = np.round(np.minimum(np.maximum(dsm_edge_px_x, np.zeros(
-            shp)), np.ones(shp) * dsm_set.RasterXSize - 1)).astype(int)
+            shp)), np.ones(shp) * x_size - 1)).astype(int)
         dsm_edge_px_y = np.round(np.minimum(np.maximum(dsm_edge_px_y, np.zeros(
-            shp)), np.ones(shp) * dsm_set.RasterYSize - 1)).astype(int)
+            shp)), np.ones(shp) * y_size - 1)).astype(int)
 
         # Round target pixels now that egdes have been found
         dsm_target_px_x = np.round(dsm_target_px_x).astype(int)
