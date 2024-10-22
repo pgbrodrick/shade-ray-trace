@@ -7,22 +7,6 @@ import numpy as np
 from tqdm import tqdm
 
 import bresenham_line
-'''
-NOTES
-OBS='/Users/carissaderanek/Library/CloudStorage/Box-Box/ray_trace/flightline_input/OBS_Data_negnan.tif'
-IGM='/Users/carissaderanek/Library/CloudStorage/Box-Box/ray_trace/flightline_input/IGM_Data_negnan_filledcoords.tif'
-DSM='/Users/carissaderanek/Library/CloudStorage/Box-Box/ray_trace/flightline_input/dsm_negnan.tif'
-OUT='/Users/carissaderanek/Library/CloudStorage/Box-Box/ray_trace/flightline_input/filledcoordsout.tif'
-python calculate_shade.py $OBS $IGM -dsm_file $DSM $OUT
-How I created the filled coords:
->>> igm = rioxarray.open_rasterio(path_to_igm_original_tif)
->>> new_igm_x=np.array([igm.x.values for i in range(igm.values[0].shape[0])])
->>> new_igm_y=np.array([igm.y.values for i in range(igm.values[0].shape[1])]).T
->>> new_igm = igm.copy(data=[new_igm_x,new_igm_y,igm.values[2]])
->>> new_igm.rio.to_raster('/Users/carissaderanek/Library/CloudStorage/Box-Box/ray_trace/flightline_input/IGM_Data_negnan_filledcoords.tif')
-Only edit to original code (on line 169):
-sunlit_line = np.where(igm_line[2, :] == -9999, -9999, sunlit_line) # at very end, mask values where there ws no IGM data originally
-'''
 
 def main():
     parser = argparse.ArgumentParser(
@@ -95,8 +79,6 @@ def main():
 
         solar_azimuth = np.squeeze(obs_line[args.solar_azimuth_b-1, :])
         solar_zenith = np.squeeze(obs_line[args.solar_zenith_b-1, :])
-        # solar_azimuth[solar_azimuth < 0] = 0
-        # print(solar_azimuth)
 
         # adjust for sun width
         #solar_zenith = solar_zenith - 0.53
@@ -132,14 +114,14 @@ def main():
 
         # Round edge pixels
         shp = dsm_target_px_x.shape
-        dsm_edge_px_x = np.floor(np.minimum(np.maximum(dsm_edge_px_x, np.zeros(
+        dsm_edge_px_x = np.round(np.minimum(np.maximum(dsm_edge_px_x, np.zeros(
             shp)), np.ones(shp) * x_size - 1)).astype(int)
-        dsm_edge_px_y = np.floor(np.minimum(np.maximum(dsm_edge_px_y, np.zeros(
+        dsm_edge_px_y = np.round(np.minimum(np.maximum(dsm_edge_px_y, np.zeros(
             shp)), np.ones(shp) * y_size - 1)).astype(int)
 
         # Round target pixels now that egdes have been found
-        dsm_target_px_x = np.floor(dsm_target_px_x).astype(int)
-        dsm_target_px_y = np.floor(dsm_target_px_y).astype(int)
+        dsm_target_px_x = np.round(dsm_target_px_x).astype(int)
+        dsm_target_px_y = np.round(dsm_target_px_y).astype(int)
 
         # combine x/y arrays
         dsm_target_px = np.transpose(np.vstack([dsm_target_px_x, dsm_target_px_y]))
@@ -157,10 +139,7 @@ def main():
             line_px = bresenham_line.bresenhamline(dsm_target_px[_px, :].reshape(
                 1, -1), dsm_edge_px[_px, :].reshape(1, -1), max_iter=-1)
 
-            # print(_px, dsm_target_px[_px, :],dsm_edge_px[_px, :],line_px)
-
             # Find surface value at each point on line
-
             surf = surface[line_px[:, 1], line_px[:, 0]]
             surf[np.isfinite(surf) == False] = -9999
 
@@ -173,7 +152,6 @@ def main():
 
             # Sunlit if solar height is always higher than relative surface (IE, no ray intersection)
             sunlit_line[_px] = np.all(solar_height > surf)
-            sunlit_line = np.where(igm_line[2, :] == -9999, -9999, sunlit_line)
 
         outDataset.GetRasterBand(1).WriteArray(sunlit_line.reshape(1, -1), 0, _line)
         outDataset.FlushCache()
